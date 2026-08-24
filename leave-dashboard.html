@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leave Tracker Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="leave-dashboard.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="side-nav card">
+      <h2>Dashboards</h2>
+      <a href="dashboard.html" class="nav-link">Main Dashboard</a>
+      <a href="leave-dashboard.html" class="nav-link active">Leave Dashboard</a>
+      <a href="phase-movement-dashboard.html" class="nav-link">Phase Movement Dashboard</a>
+      <a href="progress-evaluator.html" class="nav-link">Progress Evaluator</a>
+    </aside>
+
+    <main class="page-wrap">
+      <header class="topbar card">
+        <div>
+          <h1>Leave Tracker Dashboard</h1>
+          <p>Student leave performance and attendance pressure overview.</p>
+        </div>
+        <div class="topbar-actions">
+          <p id="leaveUserEmail" class="user-email">Loading...</p>
+          <div class="filter-row">
+            <label>
+              From
+              <input id="leaveRangeFrom" type="date" />
+            </label>
+            <label>
+              To
+              <input id="leaveRangeTo" type="date" />
+            </label>
+          </div>
+          <div class="filter-actions">
+            <button id="leaveApplyBtn" class="btn-control" type="button">Apply Range</button>
+            <button id="leaveResetBtn" class="btn-control muted" type="button">Reset</button>
+            <button id="leaveExportCsvBtn" class="btn-control export" type="button">Export CSV</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="leaveStats" class="stats-grid"></section>
+
+      <section class="grid-two">
+        <article class="card">
+          <h2>Leave Days by Student</h2>
+          <div id="leaveBars" class="bar-list"></div>
+        </article>
+
+        <article class="card">
+          <h2>Leave Risk Buckets</h2>
+          <div id="leaveRisk" class="risk-list"></div>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Detailed Leave Sheet</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Email</th>
+                <th>Phase</th>
+                <th>Phase Days</th>
+                <th>Leave Days</th>
+                <th>Attendance Score</th>
+              </tr>
+            </thead>
+            <tbody id="leaveTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="leave-dashboard.js"></script>
+</body>
+</html>

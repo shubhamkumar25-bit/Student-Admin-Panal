@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Progress Evaluator - NavGurukul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .evaluator-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .evaluator-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-group select,
+    .form-group input {
+      padding: 10px 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus {
+      outline: none;
+      border-color: #3de0b0;
+      box-shadow: 0 0 0 3px rgba(61, 224, 176, 0.1);
+    }
+
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background-color: #3de0b0;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #2bb899;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e0e0e0;
+    }
+
+    .evaluation-result {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    .evaluation-result.show {
+      display: block;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 16px;
+    }
+
+    .result-status {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .result-status.promote {
+      background-color: #0d8f55;
+      color: white;
+    }
+
+    .result-status.hold {
+      background-color: #ff7744;
+      color: white;
+    }
+
+    .result-info h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .result-info p {
+      margin: 4px 0 0 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .result-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .criteria-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .criteria-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      background-color: #f5f5f5;
+    }
+
+    .criteria-item.pass {
+      background-color: #e8f5e9;
+    }
+
+    .criteria-item.fail {
+      background-color: #ffebee;
+    }
+
+    .criteria-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 12px;
+    }
+
+    .criteria-item.pass .criteria-icon {
+      background-color: #0d8f55;
+    }
+
+    .criteria-item.fail .criteria-icon {
+      background-color: #c32035;
+    }
+
+    .criteria-text {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .criteria-value {
+      font-weight: 600;
+      color: #666;
+      font-size: 13px;
+    }
+
+    .strengths-item,
+    .weaknesses-item {
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .strengths-item {
+      background-color: #e8f5e9;
+      border-left: 4px solid #0d8f55;
+      color: #2e7d32;
+    }
+
+    .weaknesses-item {
+      background-color: #fff3e0;
+      border-left: 4px solid #ff7744;
+      color: #e65100;
+    }
+
+    .feedback-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid #3de0b0;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 24px;
+    }
+
+    .feedback-box h4 {
+      margin: 0 0 8px 0;
+      color: #1976d2;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .feedback-box p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .promotion-button {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-promote {
+      background-color: #0d8f55;
+      color: white;
+    }
+
+    .btn-promote:hover {
+      background-color: #0a6c40;
+    }
+
+    .btn-skip {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-skip:hover {
+      background-color: #e0e0e0;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .evaluator-form {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <header class="logo-header">
+        <h1>NavGurukul</h1>
+        <p>Evaluator</p>
+      </header>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="leave-dashboard.html" class="nav-item">Leave Dashboard</a>
+        <a href="phase-movement-dashboard.html" class="nav-item">Phase Movement</a>
+        <a href="progress-evaluator.html" class="nav-item active">Progress Evaluator</a>
+        <a href="admin-portal.html" class="nav-item">Admin Portal</a>
+      </nav>
+
+      <footer class="sidebar-footer">
+        <button id="userBtn" class="user-btn">🧑</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </footer>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <h1>Learning Progress Evaluator</h1>
+        <div class="header-right">
+          <p id="userEmail" class="user-email">Loading...</p>
+        </div>
+      </header>
+
+      <div class="evaluator-container">
+        <section class="chart-card">
+          <h2 class="section-title">Evaluate Student Progress</h2>
+
+          <form class="evaluator-form" id="evaluatorForm">
+            <div class="form-group">
+              <label for="studentSelect">Select Student</label>
+              <select id="studentSelect" required>
+                <option value="">-- Choose a student --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="milestonePct">Milestone Completion (%)</label>
+              <input type="number" id="milestonePct" min="0" max="100" step="1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="leaveDays">Leave Days</label>
+              <input type="number" id="leaveDays" min="0" max="30" step="1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="scoreValue">Skill Score (0-5)</label>
+              <input type="number" id="scoreValue" min="0" max="5" step="0.1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="htmlHours">HTML Hours Spent</label>
+              <input type="number" id="htmlHours" min="0" step="1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="cssHours">CSS Hours Spent</label>
+              <input type="number" id="cssHours" min="0" step="1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="jsHours">JavaScript Hours Spent</label>
+              <input type="number" id="jsHours" min="0" step="1" required />
+            </div>
+
+            <div class="form-group">
+              <label for="assignmentsCompleted">Assignments Completed</label>
+              <input type="number" id="assignmentsCompleted" min="0" step="1" required />
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="evaluateBtn">Evaluate Student</button>
+              <button type="reset" class="btn btn-secondary">Clear Form</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="evaluation-result chart-card" id="resultContainer">
+          <div class="result-header">
+            <div class="result-status" id="resultStatus"></div>
+            <div class="result-info">
+              <h2 id="resultTitle"></h2>
+              <p id="resultPhase"></p>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-section">
+              <h3>Promotion Criteria</h3>
+              <div class="criteria-list" id="criteriaList"></div>
+            </div>
+
+            <div class="result-section">
+              <h3>Strengths & Weaknesses</h3>
+              <div id="strengthsList"></div>
+              <div id="weaknessList"></div>
+            </div>
+          </div>
+
+          <div class="feedback-box">
+            <h4>Feedback</h4>
+            <p id="feedbackText"></p>
+          </div>
+
+          <div class="promotion-button" id="promotionActions"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+  <script src="progress-evaluator.js"></script>
+</body>
+</html>

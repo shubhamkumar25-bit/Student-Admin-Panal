@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <header class="logo-header">
+        <h1>NavGurukul</h1>
+        <p>Dashboard</p>
+      </header>
+
+
+
+      
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item active">Dashboard</a>
+        <a href="leave-dashboard.html" class="nav-item">Leave Dashboard</a>
+        <a href="phase-movement-dashboard.html" class="nav-item">Phase Movement Dashboard</a>
+        <a href="progress-evaluator.html" class="nav-item">Progress Evaluator</a>
+        <a href="admin-portal.html" class="nav-item">Admin Portal</a>
+      </nav>
+
+      <footer class="sidebar-footer">
+        <button id="userBtn" class="user-btn">🧑</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </footer>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <h1>Dashboard</h1>
+        <div class="header-right">
+          <input type="search" placeholder="Search students..." class="search-box" />
+          <p id="userEmail" class="user-email">Loading...</p>
+        </div>
+      </header>
+
+      <section id="studentTrackerControls" class="tracker-controls">
+        <div class="tracker-search-row">
+          <input id="trackStudentInput" type="search" class="tracker-search-input" list="studentSuggestions" placeholder="Track student by name or email" />
+          <datalist id="studentSuggestions"></datalist>
+          <button id="trackStudentBtn" class="tracker-btn" type="button">Track</button>
+          <button id="clearTrackBtn" class="tracker-btn clear" type="button">Reset</button>
+        </div>
+        <p id="trackStatus" class="tracker-status">Type student name/email and click Track.</p>
+      </section>
+
+      <section class="stats-grid" id="statsContainer"></section>
+
+      <section class="roadmap-grid">
+        <article class="chart-card roadmap-card">
+          <h3>Learning Flowchart</h3>
+          <p class="roadmap-subtitle">Phase-wise journey from basics to backend stack.</p>
+          <div id="learningFlowchart" class="flowchart-wrap"></div>
+        </article>
+
+        <article class="chart-card roadmap-card">
+          <h3>Phase Timeline and Leaves</h3>
+          <p class="roadmap-subtitle">Pass days and leave days for each phase.</p>
+          <div id="roadmapTargetControls" class="roadmap-target-controls"></div>
+          <div class="roadmap-export">
+            <button id="exportRoadmapCsvBtn" class="roadmap-btn export" type="button">Export Student Roadmap CSV</button>
+          </div>
+          <div id="phaseJourneyTable" class="journey-table-wrap"></div>
+          <div id="journeySummary" class="journey-summary"></div>
+          <div id="roadmapEditor" class="roadmap-editor"></div>
+        </article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="chart-card">
+          <h3>Student Status</h3>
+          <div id="statusChart" class="pie-chart"></div>
+        </article>
+
+        <article class="chart-card">
+          <h3>Students by Phase</h3>
+          <div id="phaseChart" class="bar-chart"></div>
+        </article>
+      </section>
+
+      <section class="two-col">
+        <article class="chart-card">
+          <h3>OJT Track Progress</h3>
+          <div id="ojtChart" class="progress-chart"></div>
+        </article>
+
+        <article class="chart-card">
+          <h3>Milestone Completion</h3>
+          <div id="milestoneChart" class="progress-chart"></div>
+        </article>
+      </section>
+
+      <section class="two-col">
+        <article class="chart-card">
+          <h3>Phase Tracker</h3>
+          <div id="phaseTracker" class="progress-chart"></div>
+        </article>
+
+        <article class="chart-card">
+          <h3>Leave Tracker</h3>
+          <div id="leaveTracker" class="progress-chart"></div>
+        </article>
+      </section>
+
+      <section class="two-col">
+        <article class="chart-card">
+          <h3>Top Students</h3>
+          <div id="topStudents" class="student-list"></div>
+        </article>
+
+        <article class="chart-card needs-card">
+          <h3>Needs Attention</h3>
+          <div id="needsAttention" class="attention-list"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

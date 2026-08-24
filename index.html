@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Guitar</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="title-wrap card">
+      <h1>Virtual Guitar</h1>
+      <p>Strings par click karo aur guitar jaisi sound suno.</p>
+    </header>
+
+    <section class="card guitar-card" aria-label="Guitar card">
+      <section class="guitar" aria-label="Virtual guitar">
+        <div class="body">
+          <div class="sound-hole"></div>
+          <div class="bridge"></div>
+        </div>
+
+        <div class="neck">
+          <span class="fret" style="left: 12%"></span>
+          <span class="fret" style="left: 24%"></span>
+          <span class="fret" style="left: 36%"></span>
+          <span class="fret" style="left: 48%"></span>
+          <span class="fret" style="left: 60%"></span>
+          <span class="fret" style="left: 72%"></span>
+          <span class="fret" style="left: 84%"></span>
+        </div>
+
+        <div class="headstock"></div>
+
+        <div class="strings" role="group" aria-label="Guitar strings">
+          <button class="string" data-freq="146.83" data-note="D3" aria-label="String 1 D3"></button>
+          <button class="string" data-freq="196.00" data-note="G3" aria-label="String 2 G3"></button>
+          <button class="string" data-freq="246.94" data-note="B3" aria-label="String 3 B3"></button>
+        </div>
+      </section>
+    </section>
+
+    <section class="card controls-card">
+      <h2>Chords</h2>
+      <section class="controls">
+        <button class="chord" data-chord="C">Chord C</button>
+        <button class="chord" data-chord="G">Chord G</button>
+        <button class="chord" data-chord="D">Chord D</button>
+      </section>
+    </section>
+
+    <section class="card controls-card songs-card">
+      <h2>Songs</h2>
+      <section class="controls songs">
+        <button class="song-btn" data-song="twinkle">Twinkle</button>
+        <button class="song-btn" data-song="happy">Happy Birthday</button>
+        <button class="song-btn" data-song="calm">Calm Tune</button>
+      </section>
+    </section>
+
+    <section class="bottom-cards" aria-label="Extra cards">
+      <div class="card mini-card">
+        <h3>String Keys</h3>
+        <p>1-3 ya A S D dabao aur strings bajao.</p>
+      </div>
+      <div class="card mini-card">
+        <h3>Chord Keys</h3>
+        <p>C/G/D ya J/K/L dabao aur quick chord strum suno.</p>
+      </div>
+      <div class="card mini-card">
+        <h3>Tip</h3>
+        <p>Q W E R T Y dabao to alag sur niklenge. Z/X/N se songs bajenge.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
