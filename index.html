@@ -1,79 +1,82 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Guitar</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>NavGurukul Student Admin Panel</title>
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-  <main class="app">
-    <header class="title-wrap card">
-      <h1>Virtual Guitar</h1>
-      <p>Strings par click karo aur guitar jaisi sound suno.</p>
-    </header>
+  <main class="login-shell">
+    <section class="hero-pane" aria-label="Brand section">
+      <div class="brand-block">
+        <h1>NavGurukul</h1>
+        <p>Dharamshala Campus</p>
+      </div>
 
-    <section class="card guitar-card" aria-label="Guitar card">
-      <section class="guitar" aria-label="Virtual guitar">
-        <div class="body">
-          <div class="sound-hole"></div>
-          <div class="bridge"></div>
-        </div>
+      <div class="hero-content">
+        <h2>Student Data &amp; Journey Management</h2>
+        <p>Track learning journeys, milestones, placements, and growth of every student.</p>
+      </div>
 
-        <div class="neck">
-          <span class="fret" style="left: 12%"></span>
-          <span class="fret" style="left: 24%"></span>
-          <span class="fret" style="left: 36%"></span>
-          <span class="fret" style="left: 48%"></span>
-          <span class="fret" style="left: 60%"></span>
-          <span class="fret" style="left: 72%"></span>
-          <span class="fret" style="left: 84%"></span>
-        </div>
-
-        <div class="headstock"></div>
-
-        <div class="strings" role="group" aria-label="Guitar strings">
-          <button class="string" data-freq="146.83" data-note="D3" aria-label="String 1 D3"></button>
-          <button class="string" data-freq="196.00" data-note="G3" aria-label="String 2 G3"></button>
-          <button class="string" data-freq="246.94" data-note="B3" aria-label="String 3 B3"></button>
-        </div>
-      </section>
+      <div class="stats-row" aria-label="Quick stats">
+        <article class="stat-card">
+          <strong>53</strong>
+          <span>Students</span>
+        </article>
+        <article class="stat-card">
+          <strong>13</strong>
+          <span>Journey Stages</span>
+        </article>
+        <article class="stat-card">
+          <strong>3</strong>
+          <span>Placed</span>
+        </article>
+      </div>
     </section>
 
-    <section class="card controls-card">
-      <h2>Chords</h2>
-      <section class="controls">
-        <button class="chord" data-chord="C">Chord C</button>
-        <button class="chord" data-chord="G">Chord G</button>
-        <button class="chord" data-chord="D">Chord D</button>
-      </section>
-    </section>
+    <section class="form-pane" aria-label="Login section">
+      <header>
+        <h2>Welcome back!</h2>
+        <p>Sign in to your account</p>
+      </header>
 
-    <section class="card controls-card songs-card">
-      <h2>Songs</h2>
-      <section class="controls songs">
-        <button class="song-btn" data-song="twinkle">Twinkle</button>
-        <button class="song-btn" data-song="happy">Happy Birthday</button>
-        <button class="song-btn" data-song="calm">Calm Tune</button>
-      </section>
-    </section>
+      <form id="loginForm" novalidate>
+        <label for="email">Email Address</label>
+        <input id="email" name="email" type="email" placeholder="yourname@navgurukul.org" autocomplete="username" required />
 
-    <section class="bottom-cards" aria-label="Extra cards">
-      <div class="card mini-card">
-        <h3>String Keys</h3>
-        <p>1-3 ya A S D dabao aur strings bajao.</p>
-      </div>
-      <div class="card mini-card">
-        <h3>Chord Keys</h3>
-        <p>C/G/D ya J/K/L dabao aur quick chord strum suno.</p>
-      </div>
-      <div class="card mini-card">
-        <h3>Tip</h3>
-        <p>Q W E R T Y dabao to alag sur niklenge. Z/X/N se songs bajenge.</p>
-      </div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Enter password" autocomplete="current-password" required />
+
+        <button id="loginBtn" type="submit">Sign In</button>
+      </form>
+
+      <p id="statusMessage" class="status" aria-live="polite">Admin panel me sign in karein.</p>
+
+      <section class="demo-box" aria-label="Demo credentials">
+        <h3>Demo Credentials</h3>
+        <div class="cred-grid">
+          <div>
+            <h4>Demo</h4>
+            <p>shubham@navgurukul.org</p>
+            <p>@123</p>
+          </div>
+          <div>
+            <h4>Admin</h4>
+            <p>admin@navgurukul.org</p>
+            <p>admin@2026</p>
+          </div>
+        </div>
+      </section>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script src="student-data.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

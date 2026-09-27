@@ -1,112 +1,6 @@
-// Load or initialize students
+// Student records come from the shared dataset in student-data.js.
 function getStudents() {
-  const stored = localStorage.getItem("studentDatabase");
-  if (stored) {
-    let parsed = [];
-    try {
-      parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) {
-        parsed = [];
-      }
-    } catch {
-      parsed = [];
-    }
-
-    if (parsed.length === 0) {
-      localStorage.removeItem("studentDatabase");
-      return getStudents();
-    }
-
-    const shubhamIndex = parsed.findIndex(
-      (s) => s.email && s.email.toLowerCase() === "shubham@navgurukul.org"
-    );
-
-    // Ensure requested demo account is always available with fixed credentials.
-    if (shubhamIndex === -1) {
-      parsed.push({
-        id: Math.max(...parsed.map((s) => s.id || 0), 100) + 1,
-        name: "Shubham",
-        email: "shubham@navgurukul.org",
-        password: "@123",
-        role: "Student",
-        phase: "Foundation",
-        status: "Active",
-        ojtProgress: 0,
-        milestoneCompletion: 0,
-        score: 0,
-        htmlHoursSpent: 0,
-        cssHoursSpent: 0,
-        jsHoursSpent: 0,
-        phaseDays: 0,
-        leaveDays: 0
-      });
-    } else {
-      parsed[shubhamIndex] = {
-        ...parsed[shubhamIndex],
-        name: "Shubham",
-        email: "shubham@navgurukul.org",
-        password: "@123",
-        role: "Student",
-        htmlHoursSpent: parsed[shubhamIndex].htmlHoursSpent || 0,
-        cssHoursSpent: parsed[shubhamIndex].cssHoursSpent || 0,
-        jsHoursSpent: parsed[shubhamIndex].jsHoursSpent || 0,
-        phaseDays: parsed[shubhamIndex].phaseDays || 0,
-        leaveDays: parsed[shubhamIndex].leaveDays || 0
-      };
-    }
-
-    localStorage.setItem("studentDatabase", JSON.stringify(parsed));
-
-    return parsed;
-  }
-  return [
-    {
-      id: 1,
-      name: "Shubham",
-      email: "shubham@navgurukul.org",
-      password: "@123",
-      role: "Student",
-      phase: "Foundation",
-      status: "Active",
-      ojtProgress: 0,
-      milestoneCompletion: 0,
-      score: 0,
-      htmlHoursSpent: 0,
-      cssHoursSpent: 0,
-      jsHoursSpent: 0,
-      phaseDays: 0,
-      leaveDays: 0
-    },
-    {
-      id: 2,
-      name: "Priya Sharma",
-      email: "priya@navgurukul.org",
-      password: "priya@2026",
-      role: "Student",
-      phase: "Intermediate",
-      status: "Active",
-      ojtProgress: 75,
-      milestoneCompletion: 85,
-      score: 4.6,
-      htmlHoursSpent: 28,
-      cssHoursSpent: 22,
-      jsHoursSpent: 35,
-      phaseDays: 42,
-      leaveDays: 2
-    },
-    {
-      id: 3,
-      name: "Admin",
-      email: "admin@navgurukul.org",
-      password: "admin@2026",
-      role: "Admin",
-      htmlHoursSpent: 0,
-      cssHoursSpent: 0,
-      jsHoursSpent: 0,
-      phaseDays: 0,
-      leaveDays: 0
-    }
-  ];
+  return loadStudents();
 }
 
 function normalizeEmail(email) {
@@ -119,9 +13,9 @@ function getDirectCredentialUser(email, password) {
   if (normalizedEmail === "shubham@navgurukul.org" && password === "@123") {
     return {
       id: 1,
-      name: "Shubham",
+      name: "Shubham Kumar",
       email: "shubham@navgurukul.org",
-      role: "Student"
+      role: "Admin"
     };
   }
 
@@ -198,9 +92,9 @@ function findUser(email, password) {
   if (isShubhamEmail && isShubhamPassword) {
     return {
       id: 1,
-      name: "Shubham",
+      name: "Shubham Kumar",
       email: "shubham@navgurukul.org",
-      role: "Student"
+      role: "Admin"
     };
   }
 
@@ -219,14 +113,10 @@ function loginUser(user) {
   };
 
   localStorage.setItem("studentPortalSession", JSON.stringify(session));
-  setStatus(`Login successful. ${user.role} dashboard open ho raha hai...`, "success");
+  setStatus("Login successful. Admin dashboard open ho raha hai...", "success");
 
   setTimeout(() => {
-   if (user.role === "Admin") {
-     window.location.href = "admin-portal.html";
-   } else {
-     window.location.href = "dashboard.html";
-   }
+    window.location.href = "admin-portal.html";
   }, 700);
 }
 

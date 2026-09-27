@@ -371,12 +371,12 @@ function displayEvaluation(evaluation, student) {
 
 // Promote student to next phase
 function promoteStudent(student, evaluation) {
-  const students = getStudentsFromStorage();
+  const students = loadStudents();
   const studentIndex = students.findIndex(s => s.id === student.id);
 
   if (studentIndex !== -1 && evaluation.nextPhase) {
     students[studentIndex].phase = evaluation.nextPhase;
-    localStorage.setItem("studentDatabase", JSON.stringify(students));
+    saveStudents(students);
 
     alert(`✓ ${student.name} has been promoted to ${evaluation.nextPhase}`);
     
@@ -400,5 +400,5 @@ document.addEventListener("DOMContentLoaded", function () {
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", function () {
   localStorage.removeItem("userEmail");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });
