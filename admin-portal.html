@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Management Portal</title>
+  <title>NavGurukul Student Admin Panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -14,13 +14,28 @@
     <aside class="admin-sidebar">
       <header class="admin-logo">
         <h1>NavGurukul</h1>
-        <p>Admin</p>
+        <p>Dharamshala Campus</p>
       </header>
 
       <nav class="admin-nav">
+        <p class="nav-group-title">Students</p>
+        <a href="#" class="nav-link active" data-section="dashboard">📊 Student Overview</a>
+        <a href="#" class="nav-link" data-section="students">👥 Student List</a>
+        <a href="#" class="nav-link" data-section="profile">🧑‍🎓 Student Profile</a>
+
+        <p class="nav-group-title">Journey</p>
+        <a href="#" class="nav-link" data-section="journey">🛤️ Learning Journey</a>
+        <a href="#" class="nav-link" data-section="stages">🧭 Journey Stages</a>
+        <a href="#" class="nav-link" data-section="milestones">🏁 Milestones</a>
+
+        <p class="nav-group-title">Performance</p>
+        <a href="#" class="nav-link" data-section="skills">📚 Skills &amp; Progress</a>
+        <a href="#" class="nav-link" data-section="attendance">🗓️ Attendance</a>
+        <a href="#" class="nav-link" data-section="projects">💼 Projects</a>
+        <a href="#" class="nav-link" data-section="placement">🎓 Placement Status</a>
+        <a href="#" class="nav-link" data-section="growth">📈 Growth &amp; Performance</a>
+
         <p class="nav-group-title">Manage</p>
-        <a href="#" class="nav-link active" data-section="dashboard">📊 Dashboard</a>
-        <a href="#" class="nav-link" data-section="students">👥 All Students</a>
         <a href="#" class="nav-link" data-section="add-student">➕ Add Student</a>
         <a href="#" class="nav-link" data-section="settings">⚙️ Settings</a>
 
@@ -36,23 +51,31 @@
     </aside>
 
     <main class="admin-main">
-      <!-- Dashboard Section -->
+      <header class="admin-topbar">
+        <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="Toggle navigation">☰</button>
+        <div class="topbar-brand">
+          <strong>NavGurukul Student Admin Panel</strong>
+          <span>Student Data &amp; Journey Management · Dharamshala Campus</span>
+        </div>
+        <p id="adminEmail" class="user-info">Loading...</p>
+      </header>
+
+      <!-- Student Overview Section -->
       <section id="dashboard" class="admin-section active">
         <header class="section-header">
-          <h1>Dashboard</h1>
-          <p id="adminEmail" class="user-info">Loading...</p>
+          <h1>Student Overview</h1>
         </header>
 
         <div class="dashboard-grid">
           <div class="dashboard-card orange">
             <div class="card-number" id="totalStudents">0</div>
-            <div class="card-label">Total Students</div>
-          </div>
-          <div class="dashboard-card green">
-            <div class="card-number" id="activeStudents">0</div>
-            <div class="card-label">Active Students</div>
+            <div class="card-label">Students</div>
           </div>
           <div class="dashboard-card blue">
+            <div class="card-number" id="journeyStageCount">0</div>
+            <div class="card-label">Journey Stages</div>
+          </div>
+          <div class="dashboard-card green">
             <div class="card-number" id="placedStudents">0</div>
             <div class="card-label">Placed</div>
           </div>
@@ -63,30 +86,77 @@
         </div>
 
         <div class="dashboard-grid">
-          <div class="dashboard-card orange">
-            <div class="card-number" id="avgPhaseDays">0</div>
-            <div class="card-label">Avg Phase Days</div>
-          </div>
           <div class="dashboard-card green">
-            <div class="card-number" id="avgLeaveDays">0</div>
-            <div class="card-label">Avg Leave Days</div>
+            <div class="card-number" id="activeStudents">0</div>
+            <div class="card-label">Active Students</div>
+          </div>
+          <div class="dashboard-card orange">
+            <div class="card-number" id="avgJourneyProgress">0%</div>
+            <div class="card-label">Avg Journey Progress</div>
+          </div>
+          <div class="dashboard-card blue">
+            <div class="card-number" id="avgAttendance">0%</div>
+            <div class="card-label">Avg Attendance</div>
+          </div>
+          <div class="dashboard-card purple">
+            <div class="card-number" id="avgScore">0</div>
+            <div class="card-label">Avg Score</div>
           </div>
         </div>
 
+        <div class="panel-grid">
+          <article class="panel-card">
+            <h3>Students per Journey Stage</h3>
+            <div id="stageDistribution" class="bar-list"></div>
+          </article>
+          <article class="panel-card">
+            <h3>Needs Attention</h3>
+            <div id="needsAttentionList" class="mini-list"></div>
+          </article>
+        </div>
+
         <div class="dashboard-actions">
+          <button class="action-btn view-btn" onclick="switchSection('students')">👥 View Student List</button>
           <button class="action-btn add-btn" onclick="switchSection('add-student')">➕ Add New Student</button>
-          <button class="action-btn view-btn" onclick="switchSection('students')">👥 View All Students</button>
           <a class="action-btn tracker-btn" href="leave-dashboard.html">🗓️ Open Leave Dashboard</a>
           <a class="action-btn tracker-btn" href="phase-movement-dashboard.html">🧭 Open Phase Dashboard</a>
         </div>
       </section>
 
-      <!-- Students List Section -->
+      <!-- Student List Section -->
       <section id="students" class="admin-section">
         <header class="section-header">
-          <h1>All Students</h1>
+          <h1>Student List</h1>
           <input type="search" id="searchInput" class="search-input" placeholder="Search by name or email..." />
         </header>
+
+        <div class="filter-bar">
+          <label>
+            Journey Stage
+            <select id="stageFilter"><option value="">All stages</option></select>
+          </label>
+          <label>
+            Status
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="At Risk">At Risk</option>
+              <option value="Placed">Placed</option>
+            </select>
+          </label>
+          <label>
+            Placement
+            <select id="placementFilter">
+              <option value="">All placement states</option>
+              <option value="Placed">Placed</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Preparing">Preparing</option>
+            </select>
+          </label>
+          <button id="resetFiltersBtn" class="btn-secondary" type="button">Reset</button>
+          <p id="studentCountLabel" class="count-label"></p>
+        </div>
 
         <div class="students-table-container">
           <table class="students-table">
@@ -94,15 +164,12 @@
               <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Phase</th>
+                <th>Journey Stage</th>
                 <th>Status</th>
-                <th>OJT %</th>
-                <th>Milestone %</th>
-                <th>HTML Hrs</th>
-                <th>CSS Hrs</th>
-                <th>JS Hrs</th>
-                <th>Phase Days</th>
-                <th>Leave Days</th>
+                <th>Journey %</th>
+                <th>Milestones</th>
+                <th>Attendance</th>
+                <th>Placement</th>
                 <th>Score</th>
                 <th>Actions</th>
               </tr>
@@ -112,6 +179,79 @@
             </tbody>
           </table>
         </div>
+      </section>
+
+      <!-- Student Profile Section -->
+      <section id="profile" class="admin-section">
+        <header class="section-header">
+          <h1>Student Profile</h1>
+          <select id="profileSelect" class="search-input"></select>
+        </header>
+        <div id="profileContent"></div>
+      </section>
+
+      <!-- Learning Journey Section -->
+      <section id="journey" class="admin-section">
+        <header class="section-header">
+          <h1>Learning Journey</h1>
+        </header>
+        <div id="journeyContent"></div>
+      </section>
+
+      <!-- Journey Stages Section -->
+      <section id="stages" class="admin-section">
+        <header class="section-header">
+          <h1>Journey Stages</h1>
+        </header>
+        <div id="stagesContent"></div>
+      </section>
+
+      <!-- Milestones Section -->
+      <section id="milestones" class="admin-section">
+        <header class="section-header">
+          <h1>Milestones</h1>
+        </header>
+        <div id="milestonesContent"></div>
+      </section>
+
+      <!-- Skills & Progress Section -->
+      <section id="skills" class="admin-section">
+        <header class="section-header">
+          <h1>Skills &amp; Progress</h1>
+        </header>
+        <div id="skillsContent"></div>
+      </section>
+
+      <!-- Attendance Section -->
+      <section id="attendance" class="admin-section">
+        <header class="section-header">
+          <h1>Attendance</h1>
+        </header>
+        <div id="attendanceContent"></div>
+      </section>
+
+      <!-- Projects Section -->
+      <section id="projects" class="admin-section">
+        <header class="section-header">
+          <h1>Projects</h1>
+        </header>
+        <div id="projectsContent"></div>
+      </section>
+
+      <!-- Placement Status Section -->
+      <section id="placement" class="admin-section">
+        <header class="section-header">
+          <h1>Placement Status</h1>
+        </header>
+        <div id="placementContent"></div>
+      </section>
+
+      <!-- Growth & Performance Section -->
+      <section id="growth" class="admin-section">
+        <header class="section-header">
+          <h1>Growth &amp; Performance</h1>
+        </header>
+        <div id="growthContent"></div>
       </section>
 
       <!-- Add Student Section -->
@@ -138,15 +278,13 @@
             </div>
 
             <div class="form-group">
-              <label for="studentPhase">Learning Phase *</label>
-              <select id="studentPhase" required>
-                <option value="">Select Phase</option>
-                <option value="Phase 1 - HTML">Phase 1 - HTML</option>
-                <option value="Phase 2 - CSS">Phase 2 - CSS</option>
-                <option value="Phase 3 - JavaScript">Phase 3 - JavaScript</option>
-                <option value="Phase 4 - Node.js">Phase 4 - Node.js</option>
-                <option value="Phase 5 - Express.js + MongoDB">Phase 5 - Express.js + MongoDB</option>
-              </select>
+              <label for="studentStage">Journey Stage *</label>
+              <select id="studentStage" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="studentPhase">Learning Phase (auto from phase days)</label>
+              <input id="studentPhase" type="text" readonly />
             </div>
 
             <div class="form-group">
@@ -198,9 +336,15 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="studentLeaveDays">Leave Days</label>
-              <input id="studentLeaveDays" type="number" min="0" step="1" value="0" placeholder="0" />
+            <div class="form-row">
+              <div class="form-group">
+                <label for="studentLeaveDays">Leave Days</label>
+                <input id="studentLeaveDays" type="number" min="0" step="1" value="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label for="studentAttendance">Days Present (of 120)</label>
+                <input id="studentAttendance" type="number" min="0" max="120" step="1" value="0" placeholder="0" />
+              </div>
             </div>
 
             <div class="form-actions">
@@ -230,20 +374,16 @@
 
           <div class="settings-card">
             <h3>Reset Data</h3>
-            <p>Warning: This will clear all custom students</p>
-            <button class="btn-danger" onclick="resetCustomStudents()">🗑️ Reset Custom Data</button>
-          </div>
-
-          <div class="settings-card">
-            <h3>Quick Actions</h3>
-            <p>Useful quick actions</p>
-            <button class="btn-secondary" onclick="generateDemoStudents()">📋 Add Demo Students</button>
+            <p>Warning: this restores the campus seed data and drops local edits</p>
+            <button class="btn-danger" onclick="resetCustomStudents()">🗑️ Reset Student Data</button>
           </div>
         </div>
       </section>
     </main>
   </div>
 
+  <script src="student-data.js"></script>
   <script src="admin-portal.js"></script>
+  <script src="admin-views.js"></script>
 </body>
 </html>

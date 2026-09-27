@@ -891,7 +891,7 @@ function renderNeedsAttention(allStudents = null) {
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem("studentPortalSession");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });
 
 // Initialize on page load

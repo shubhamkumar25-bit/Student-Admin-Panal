@@ -1,50 +1,29 @@
-// Admin Portal JavaScript
+// NavGurukul Student Admin Panel - overview, student list and student records.
 
 let editingStudentId = null;
 
 function initAdminPortal() {
   const session = JSON.parse(localStorage.getItem("studentPortalSession") || "{}");
 
-  // Check if user is admin
-  if (session.role !== "Admin") {
-    alert("Access denied. Admin only.");
-    window.location.href = "login.html";
+  if (!session.email) {
+    window.location.href = "index.html";
     return;
   }
 
-  document.getElementById("adminEmail").textContent = session.email || "Admin";
+  document.getElementById("adminEmail").textContent = session.email;
+  populateFilters();
   loadDashboardData();
   loadStudentsTable();
   setupEventListeners();
   syncAutoPhaseField();
 }
 
-function normalizeStudent(student) {
-  const phaseDays = Number(student.phaseDays) || 0;
-  const autoPhase = getLearningPhaseFromDays(phaseDays);
-
-  return {
-    ...student,
-    phase: autoPhase,
-    status: student.status || "Pending",
-    ojtProgress: Number(student.ojtProgress) || 0,
-    milestoneCompletion: Number(student.milestoneCompletion) || 0,
-    score: Number(student.score) || 0,
-    htmlHoursSpent: Number(student.htmlHoursSpent) || 0,
-    cssHoursSpent: Number(student.cssHoursSpent) || 0,
-    jsHoursSpent: Number(student.jsHoursSpent) || 0,
-    phaseDays,
-    leaveDays: Number(student.leaveDays) || 0
-  };
+function getStudents() {
+  return getStudentRecords();
 }
 
-function getLearningPhaseFromDays(phaseDays) {
-  const totalDays = Number(phaseDays) || 0;
-  if (totalDays <= 12) return "Phase 1 - HTML";
-  if (totalDays <= 26) return "Phase 2 - CSS";
-  if (totalDays <= 44) return "Phase 3 - JavaScript";
-  if (totalDays <= 60) return "Phase 4 - Node.js";
-  return "Phase 5 - Express.js + MongoDB";
+function getJourneyProgress(student) {
+  return Math.round((student.journeyStageIndex / (JOURNEY_STAGES.length - 1)) * 100);
 }
 
 function syncAutoPhaseField() {
@@ -53,25 +32,32 @@ function syncAutoPhaseField() {
 
   if (!phaseDaysInput || !phaseField) return;
 
-  const autoPhase = getLearningPhaseFromDays(phaseDaysInput.value);
-  phaseField.value = autoPhase;
+  phaseField.value = getLearningPhaseFromDays(phaseDaysInput.value);
+}
+
+function populateFilters() {
+  const stageFilter = document.getElementById("stageFilter");
+  const stageSelect = document.getElementById("studentStage");
+
+  JOURNEY_STAGES.forEach(stage => {
+    stageFilter.insertAdjacentHTML("beforeend", `<option value="${stage}">${stage}</option>`);
+    if (stageSelect) {
+      stageSelect.insertAdjacentHTML("beforeend", `<option value="${stage}">${stage}</option>`);
+    }
+  });
 }
 
 function setupEventListeners() {
-  // Navigation
   document.querySelectorAll(".nav-link").forEach(link => {
     link.addEventListener("click", (e) => {
       const section = link.dataset.section;
-      if (!section) {
-        return;
-      }
+      if (!section) return;
 
       e.preventDefault();
       switchSection(section);
     });
   });
 
-  // Form submission
   document.getElementById("addStudentForm").addEventListener("submit", (e) => {
     e.preventDefault();
     if (editingStudentId !== null) {
@@ -81,31 +67,39 @@ function setupEventListeners() {
     addNewStudent();
   });
 
-  // Search
-  document.getElementById("searchInput").addEventListener("input", filterStudentsTable);
+  document.getElementById("searchInput").addEventListener("input", loadStudentsTable);
+  document.getElementById("stageFilter").addEventListener("change", loadStudentsTable);
+  document.getElementById("statusFilter").addEventListener("change", loadStudentsTable);
+  document.getElementById("placementFilter").addEventListener("change", loadStudentsTable);
+  document.getElementById("resetFiltersBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("stageFilter").value = "";
+    document.getElementById("statusFilter").value = "";
+    document.getElementById("placementFilter").value = "";
+    loadStudentsTable();
+  });
 
   document.getElementById("studentPhaseDays").addEventListener("input", syncAutoPhaseField);
 
-  // Logout
-  document.getElementById("adminLogoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("studentPortalSession");
-    window.location.href = "login.html";
+  document.getElementById("sidebarToggle").addEventListener("click", () => {
+    document.querySelector(".admin-layout").classList.toggle("nav-open");
   });
 
-  // Restore file input
+  document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("studentPortalSession");
+    window.location.href = "index.html";
+  });
+
   document.getElementById("restoreFile").addEventListener("change", restoreFromBackup);
 }
 
 function switchSection(sectionId) {
-  // Hide all sections
   document.querySelectorAll(".admin-section").forEach(section => {
     section.classList.remove("active");
   });
 
-  // Show selected section
   document.getElementById(sectionId).classList.add("active");
 
-  // Update nav links
   document.querySelectorAll(".nav-link").forEach(link => {
     link.classList.remove("active");
     if (link.dataset.section === sectionId) {
@@ -113,9 +107,18 @@ function switchSection(sectionId) {
     }
   });
 
-  // Reload data if needed
+  document.querySelector(".admin-layout").classList.remove("nav-open");
+
+  if (sectionId === "dashboard") {
+    loadDashboardData();
+  }
+
   if (sectionId === "students") {
     loadStudentsTable();
+  }
+
+  if (typeof renderAnalyticsSection === "function") {
+    renderAnalyticsSection(sectionId);
   }
 
   if (sectionId === "add-student" && editingStudentId === null) {
@@ -130,91 +133,101 @@ function switchSection(sectionId) {
   }
 }
 
+function average(values) {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
 function loadDashboardData() {
-  const allStudents = getStudentsFromStorage();
+  const allStudents = getStudents();
 
-  const total = allStudents.length;
-  const active = allStudents.filter(s => s.status === "Active").length;
-  const placed = allStudents.filter(s => s.status === "Placed").length;
+  const placed = allStudents.filter(s => s.placement.status === "Placed").length;
   const atRisk = allStudents.filter(s => s.status === "At Risk").length;
-  const avgPhaseDays = total ? Math.round(allStudents.reduce((sum, student) => sum + (student.phaseDays || 0), 0) / total) : 0;
-  const avgLeaveDays = total ? Math.round(allStudents.reduce((sum, student) => sum + (student.leaveDays || 0), 0) / total) : 0;
+  const active = allStudents.filter(s => s.status === "Active").length;
 
-  document.getElementById("totalStudents").textContent = total;
-  document.getElementById("activeStudents").textContent = active;
+  document.getElementById("totalStudents").textContent = allStudents.length;
+  document.getElementById("journeyStageCount").textContent = JOURNEY_STAGES.length;
   document.getElementById("placedStudents").textContent = placed;
   document.getElementById("atRiskStudents").textContent = atRisk;
-  const avgPhaseDaysEl = document.getElementById("avgPhaseDays");
-  const avgLeaveDaysEl = document.getElementById("avgLeaveDays");
-  if (avgPhaseDaysEl) avgPhaseDaysEl.textContent = avgPhaseDays;
-  if (avgLeaveDaysEl) avgLeaveDaysEl.textContent = avgLeaveDays;
+  document.getElementById("activeStudents").textContent = active;
+  document.getElementById("avgJourneyProgress").textContent =
+    `${Math.round(average(allStudents.map(getJourneyProgress)))}%`;
+  document.getElementById("avgAttendance").textContent =
+    `${Math.round(average(allStudents.map(s => s.attendance.percent)))}%`;
+  document.getElementById("avgScore").textContent =
+    average(allStudents.map(s => s.score)).toFixed(1);
+
+  renderStageDistribution(allStudents);
+  renderNeedsAttention(allStudents);
 }
 
-function getStudentsFromStorage() {
-  const stored = localStorage.getItem("studentDatabase");
-  if (!stored) return [];
-  try {
-    const students = JSON.parse(stored);
-    if (!Array.isArray(students)) return [];
-    return students.map(normalizeStudent);
-  } catch {
-    return [];
-  }
-}
+function renderStageDistribution(allStudents) {
+  const container = document.getElementById("stageDistribution");
+  const counts = JOURNEY_STAGES.map(stage => ({
+    stage,
+    count: allStudents.filter(student => student.journeyStage === stage).length
+  }));
+  const max = Math.max(1, ...counts.map(item => item.count));
 
-function loadStudentsTable() {
-  const allStudents = getStudentsFromStorage();
-  const tbody = document.getElementById("studentsTableBody");
-
-  if (allStudents.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="13" style="text-align: center; padding: 20px; color: var(--text-fade);">
-          कोई students नहीं। 
-          <a href="#" onclick="switchSection('add-student'); return false;" style="color: var(--accent);">नया student add करें</a>
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = allStudents.map(student => `
-    <tr>
-      <td><strong>${student.name}</strong></td>
-      <td>${student.email}</td>
-      <td>${getLearningPhaseFromDays(student.phaseDays)}</td>
-      <td><span class="badge ${student.status.toLowerCase().replace(" ", "-")}">${student.status}</span></td>
-      <td>${student.ojtProgress || 0}%</td>
-      <td>${student.milestoneCompletion || 0}%</td>
-      <td>${student.htmlHoursSpent || 0}</td>
-      <td>${student.cssHoursSpent || 0}</td>
-      <td>${student.jsHoursSpent || 0}</td>
-      <td>${student.phaseDays || 0}</td>
-      <td>${student.leaveDays || 0}</td>
-      <td>${(student.score || 0).toFixed(1)}</td>
-      <td>
-        <div class="action-icons">
-          <button class="icon-btn" onclick="editStudent(${student.id})" title="Edit">✏️</button>
-          <button class="icon-btn delete" onclick="deleteStudent(${student.id})" title="Delete">🗑️</button>
-        </div>
-      </td>
-    </tr>
+  container.innerHTML = counts.map(item => `
+    <div class="bar-row">
+      <span class="bar-label">${item.stage}</span>
+      <span class="bar-track"><span class="bar-fill" style="width: ${(item.count / max) * 100}%"></span></span>
+      <span class="bar-value">${item.count}</span>
+    </div>
   `).join("");
 }
 
-function filterStudentsTable() {
-  const query = document.getElementById("searchInput").value.toLowerCase();
-  const allStudents = getStudentsFromStorage();
-  const filtered = allStudents.filter(s => 
-    s.name.toLowerCase().includes(query) || 
-    s.email.toLowerCase().includes(query)
-  );
+function renderNeedsAttention(allStudents) {
+  const container = document.getElementById("needsAttentionList");
+  const flagged = allStudents
+    .filter(student => student.status === "At Risk" || student.attendance.percent < 75)
+    .sort((a, b) => a.attendance.percent - b.attendance.percent)
+    .slice(0, 6);
 
+  if (flagged.length === 0) {
+    container.innerHTML = `<p class="empty-note">Har student track par hai.</p>`;
+    return;
+  }
+
+  container.innerHTML = flagged.map(student => `
+    <div class="mini-row">
+      <span>${student.name}</span>
+      <span class="badge ${student.status.toLowerCase().replace(" ", "-")}">${student.status}</span>
+      <span>${student.attendance.percent}% attendance</span>
+    </div>
+  `).join("");
+}
+
+function getFilteredStudents() {
+  const query = (document.getElementById("searchInput").value || "").toLowerCase();
+  const stage = document.getElementById("stageFilter").value;
+  const status = document.getElementById("statusFilter").value;
+  const placement = document.getElementById("placementFilter").value;
+
+  return getStudents().filter(student => {
+    const matchesQuery = !query
+      || student.name.toLowerCase().includes(query)
+      || student.email.toLowerCase().includes(query);
+    const matchesStage = !stage || student.journeyStage === stage;
+    const matchesStatus = !status || student.status === status;
+    const matchesPlacement = !placement || student.placement.status === placement;
+
+    return matchesQuery && matchesStage && matchesStatus && matchesPlacement;
+  });
+}
+
+function loadStudentsTable() {
+  const filtered = getFilteredStudents();
   const tbody = document.getElementById("studentsTableBody");
+  const countLabel = document.getElementById("studentCountLabel");
+
+  countLabel.textContent = `${filtered.length} of ${getStudents().length} students`;
+
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="13" style="text-align: center; padding: 20px; color: var(--text-fade);">कोई students नहीं मिले।</td>
+        <td colspan="10" class="empty-cell">Koi student nahi mila. Filters reset karein.</td>
       </tr>
     `;
     return;
@@ -224,18 +237,19 @@ function filterStudentsTable() {
     <tr>
       <td><strong>${student.name}</strong></td>
       <td>${student.email}</td>
-      <td>${getLearningPhaseFromDays(student.phaseDays)}</td>
+      <td>${student.journeyStage}</td>
       <td><span class="badge ${student.status.toLowerCase().replace(" ", "-")}">${student.status}</span></td>
-      <td>${student.ojtProgress || 0}%</td>
-      <td>${student.milestoneCompletion || 0}%</td>
-      <td>${student.htmlHoursSpent || 0}</td>
-      <td>${student.cssHoursSpent || 0}</td>
-      <td>${student.jsHoursSpent || 0}</td>
-      <td>${student.phaseDays || 0}</td>
-      <td>${student.leaveDays || 0}</td>
-      <td>${(student.score || 0).toFixed(1)}</td>
+      <td>
+        <span class="bar-track slim"><span class="bar-fill" style="width: ${getJourneyProgress(student)}%"></span></span>
+        ${getJourneyProgress(student)}%
+      </td>
+      <td>${student.milestoneCompletion}%</td>
+      <td>${student.attendance.percent}%</td>
+      <td>${student.placement.status}</td>
+      <td>${student.score.toFixed(1)}</td>
       <td>
         <div class="action-icons">
+          <button class="icon-btn" onclick="openStudentProfile(${student.id})" title="View profile">👁️</button>
           <button class="icon-btn" onclick="editStudent(${student.id})" title="Edit">✏️</button>
           <button class="icon-btn delete" onclick="deleteStudent(${student.id})" title="Delete">🗑️</button>
         </div>
@@ -244,82 +258,84 @@ function filterStudentsTable() {
   `).join("");
 }
 
-function addNewStudent() {
-  const name = document.getElementById("studentName").value.trim();
-  const email = document.getElementById("studentEmail").value.trim();
-  const password = document.getElementById("studentPassword").value;
-  const selectedPhase = document.getElementById("studentPhase").value;
-  const status = document.getElementById("studentStatus").value;
-  const ojtProgress = parseInt(document.getElementById("studentOJT").value) || 0;
-  const milestoneCompletion = parseInt(document.getElementById("studentMilestone").value) || 0;
-  const score = parseFloat(document.getElementById("studentScore").value) || 0;
-  const htmlHoursSpent = parseFloat(document.getElementById("studentHtmlHours").value) || 0;
-  const cssHoursSpent = parseFloat(document.getElementById("studentCssHours").value) || 0;
-  const jsHoursSpent = parseFloat(document.getElementById("studentJsHours").value) || 0;
-  const phaseDays = parseInt(document.getElementById("studentPhaseDays").value) || 0;
-  const leaveDays = parseInt(document.getElementById("studentLeaveDays").value) || 0;
-  const learningPhase = selectedPhase || getLearningPhaseFromDays(phaseDays);
+function readStudentForm() {
+  const phaseDays = parseInt(document.getElementById("studentPhaseDays").value, 10) || 0;
+  const stage = document.getElementById("studentStage").value || JOURNEY_STAGES[0];
+  const stageIndex = Math.max(0, JOURNEY_STAGES.indexOf(stage));
+  const attendancePresent = parseInt(document.getElementById("studentAttendance").value, 10) || 0;
+  const attendanceTotal = 120;
 
-  const msg = document.getElementById("formMessage");
-
-  // Validation
-  if (!name || !email || !password || !status) {
-    msg.textContent = "सभी आवश्यक fields भरें।";
-    msg.classList.remove("success");
-    msg.classList.add("error");
-    return;
-  }
-
-  const allStudents = getStudentsFromStorage();
-  if (allStudents.find(s => s.email.toLowerCase() === email.toLowerCase())) {
-    msg.textContent = "यह email पहले से registered है।";
-    msg.classList.remove("success");
-    msg.classList.add("error");
-    return;
-  }
-
-  // Create new student
-  const newStudent = {
-    id: Math.max(...allStudents.map(s => s.id || 0), 100) + 1,
-    name,
-    email,
-    password,
-    role: "Student",
-    phase: learningPhase,
-    status,
-    ojtProgress,
-    milestoneCompletion,
-    score,
-    htmlHoursSpent,
-    cssHoursSpent,
-    jsHoursSpent,
-    learningPhase,
+  return {
+    name: document.getElementById("studentName").value.trim(),
+    email: document.getElementById("studentEmail").value.trim(),
+    password: document.getElementById("studentPassword").value,
+    status: document.getElementById("studentStatus").value,
+    journeyStage: stage,
+    journeyStageIndex: stageIndex,
+    milestones: JOURNEY_STAGES.map((title, index) => ({
+      title,
+      status: index < stageIndex ? "Completed" : index === stageIndex ? "In Progress" : "Pending"
+    })),
+    milestoneCompletion: parseInt(document.getElementById("studentMilestone").value, 10) || 0,
+    ojtProgress: parseInt(document.getElementById("studentOJT").value, 10) || 0,
+    score: parseFloat(document.getElementById("studentScore").value) || 0,
+    attendance: {
+      present: attendancePresent,
+      total: attendanceTotal,
+      percent: Math.round((attendancePresent / attendanceTotal) * 100)
+    },
+    phase: getLearningPhaseFromDays(phaseDays),
     phaseDays,
-    leaveDays
+    leaveDays: parseInt(document.getElementById("studentLeaveDays").value, 10) || 0,
+    htmlHoursSpent: parseFloat(document.getElementById("studentHtmlHours").value) || 0,
+    cssHoursSpent: parseFloat(document.getElementById("studentCssHours").value) || 0,
+    jsHoursSpent: parseFloat(document.getElementById("studentJsHours").value) || 0
   };
+}
 
-  allStudents.push(newStudent);
-  localStorage.setItem("studentDatabase", JSON.stringify(allStudents));
+function setFormMessage(text, type) {
+  const msg = document.getElementById("formMessage");
+  msg.textContent = text;
+  msg.classList.remove("success", "error");
+  msg.classList.add(type);
+}
 
-  // Success message
-  msg.textContent = `✅ Student "${name}" successfully added!`;
-  msg.classList.remove("error");
-  msg.classList.add("success");
+function addNewStudent() {
+  const values = readStudentForm();
 
-  // Reset form
+  if (!values.name || !values.email || !values.password || !values.status) {
+    setFormMessage("Sabhi required fields bharein.", "error");
+    return;
+  }
+
+  const allStudents = loadStudents();
+  if (allStudents.find(s => s.email.toLowerCase() === values.email.toLowerCase())) {
+    setFormMessage("Yeh email pehle se registered hai.", "error");
+    return;
+  }
+
+  allStudents.push({
+    id: Math.max(...allStudents.map(s => s.id || 0), 1000) + 1,
+    role: "Student",
+    skills: [],
+    projects: [],
+    growth: [],
+    placement: { status: values.status === "Placed" ? "Placed" : "Preparing", company: "", role: "", package: "" },
+    ...values
+  });
+  saveStudents(allStudents);
+
+  setFormMessage(`Student "${values.name}" successfully added!`, "success");
+
   document.getElementById("addStudentForm").reset();
   syncAutoPhaseField();
   loadDashboardData();
 
-  // Auto-switch to students list after 1.5s
-  setTimeout(() => {
-    switchSection("students");
-  }, 1500);
+  setTimeout(() => switchSection("students"), 1200);
 }
 
 function editStudent(id) {
-  const allStudents = getStudentsFromStorage();
-  const student = allStudents.find(s => s.id === id);
+  const student = loadStudents().find(s => s.id === id);
 
   if (!student) {
     alert("Student not found");
@@ -328,25 +344,24 @@ function editStudent(id) {
 
   editingStudentId = id;
 
-  // Populate form
   document.getElementById("studentName").value = student.name;
   document.getElementById("studentEmail").value = student.email;
-  document.getElementById("studentPassword").value = student.password;
-  document.getElementById("studentPhase").value = student.learningPhase || getLearningPhaseFromDays(student.phaseDays);
+  document.getElementById("studentPassword").value = student.password || "";
+  document.getElementById("studentStage").value = student.journeyStage;
   document.getElementById("studentStatus").value = student.status;
-  document.getElementById("studentOJT").value = student.ojtProgress || 0;
-  document.getElementById("studentMilestone").value = student.milestoneCompletion || 0;
-  document.getElementById("studentScore").value = student.score || 0;
-  document.getElementById("studentHtmlHours").value = student.htmlHoursSpent || 0;
-  document.getElementById("studentCssHours").value = student.cssHoursSpent || 0;
-  document.getElementById("studentJsHours").value = student.jsHoursSpent || 0;
-  document.getElementById("studentPhaseDays").value = student.phaseDays || 0;
-  document.getElementById("studentLeaveDays").value = student.leaveDays || 0;
+  document.getElementById("studentOJT").value = student.ojtProgress;
+  document.getElementById("studentMilestone").value = student.milestoneCompletion;
+  document.getElementById("studentScore").value = student.score;
+  document.getElementById("studentAttendance").value = student.attendance.present;
+  document.getElementById("studentHtmlHours").value = student.htmlHoursSpent;
+  document.getElementById("studentCssHours").value = student.cssHoursSpent;
+  document.getElementById("studentJsHours").value = student.jsHoursSpent;
+  document.getElementById("studentPhaseDays").value = student.phaseDays;
+  document.getElementById("studentLeaveDays").value = student.leaveDays;
+  syncAutoPhaseField();
 
-  // Change button text
   const form = document.getElementById("addStudentForm");
-  const submitBtn = form.querySelector('button[type="submit"]');
-  submitBtn.textContent = "Update Student";
+  form.querySelector('button[type="submit"]').textContent = "Update Student";
 
   const heading = document.querySelector("#add-student .section-header h1");
   if (heading) heading.textContent = "Edit Student";
@@ -358,74 +373,31 @@ function updateStudent() {
   const id = editingStudentId;
   if (id === null) return;
 
-  const name = document.getElementById("studentName").value.trim();
-  const email = document.getElementById("studentEmail").value.trim();
-  const password = document.getElementById("studentPassword").value;
-  const selectedPhase = document.getElementById("studentPhase").value;
-  const status = document.getElementById("studentStatus").value;
-  const ojtProgress = parseInt(document.getElementById("studentOJT").value) || 0;
-  const milestoneCompletion = parseInt(document.getElementById("studentMilestone").value) || 0;
-  const score = parseFloat(document.getElementById("studentScore").value) || 0;
-  const htmlHoursSpent = parseFloat(document.getElementById("studentHtmlHours").value) || 0;
-  const cssHoursSpent = parseFloat(document.getElementById("studentCssHours").value) || 0;
-  const jsHoursSpent = parseFloat(document.getElementById("studentJsHours").value) || 0;
-  const phaseDays = parseInt(document.getElementById("studentPhaseDays").value) || 0;
-  const leaveDays = parseInt(document.getElementById("studentLeaveDays").value) || 0;
-  const learningPhase = selectedPhase || getLearningPhaseFromDays(phaseDays);
+  const values = readStudentForm();
 
-  const msg = document.getElementById("formMessage");
-
-  if (!name || !email || !password || !status) {
-    msg.textContent = "सभी आवश्यक fields भरें।";
-    msg.classList.remove("success");
-    msg.classList.add("error");
+  if (!values.name || !values.email || !values.password || !values.status) {
+    setFormMessage("Sabhi required fields bharein.", "error");
     return;
   }
 
-  let allStudents = getStudentsFromStorage();
+  const allStudents = loadStudents();
   const studentIndex = allStudents.findIndex(s => s.id === id);
 
   if (studentIndex === -1) {
-    msg.textContent = "Student not found";
-    msg.classList.remove("success");
-    msg.classList.add("error");
+    setFormMessage("Student not found", "error");
     return;
   }
 
-  const duplicate = allStudents.find(s => s.id !== id && s.email.toLowerCase() === email.toLowerCase());
-  if (duplicate) {
-    msg.textContent = "यह email पहले से registered है।";
-    msg.classList.remove("success");
-    msg.classList.add("error");
+  if (allStudents.find(s => s.id !== id && s.email.toLowerCase() === values.email.toLowerCase())) {
+    setFormMessage("Yeh email pehle se registered hai.", "error");
     return;
   }
 
-  // Update student
-  allStudents[studentIndex] = {
-    ...allStudents[studentIndex],
-    name,
-    email,
-    password,
-    status,
-    ojtProgress,
-    milestoneCompletion,
-    score,
-    htmlHoursSpent,
-    cssHoursSpent,
-    jsHoursSpent,
-    phase: learningPhase,
-    learningPhase,
-    phaseDays,
-    leaveDays
-  };
+  allStudents[studentIndex] = { ...allStudents[studentIndex], ...values };
+  saveStudents(allStudents);
 
-  localStorage.setItem("studentDatabase", JSON.stringify(allStudents));
+  setFormMessage(`Student "${values.name}" updated successfully!`, "success");
 
-  msg.textContent = `✅ Student "${name}" updated successfully!`;
-  msg.classList.remove("error");
-  msg.classList.add("success");
-
-  // Reset form
   setTimeout(() => {
     const form = document.getElementById("addStudentForm");
     form.reset();
@@ -439,25 +411,21 @@ function updateStudent() {
 }
 
 function deleteStudent(id) {
-  if (!confirm("क्या आप इस student को delete करना चाहते हैं?")) return;
+  if (!confirm("Kya aap is student ko delete karna chahte hain?")) return;
 
-  let allStudents = getStudentsFromStorage();
-  allStudents = allStudents.filter(s => s.id !== id);
-  localStorage.setItem("studentDatabase", JSON.stringify(allStudents));
+  saveStudents(loadStudents().filter(s => s.id !== id));
 
   loadStudentsTable();
   loadDashboardData();
 }
 
 function backupStudentData() {
-  const allStudents = getStudentsFromStorage();
   const data = {
     timestamp: new Date().toISOString(),
-    students: allStudents
+    students: loadStudents()
   };
 
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -479,8 +447,8 @@ function restoreFromBackup(event) {
         return;
       }
 
-      localStorage.setItem("studentDatabase", JSON.stringify(data.students));
-      alert("✅ Backup restored successfully!");
+      saveStudents(data.students);
+      alert("Backup restored successfully!");
       location.reload();
     } catch (error) {
       alert("Error reading backup file: " + error.message);
@@ -490,27 +458,11 @@ function restoreFromBackup(event) {
 }
 
 function resetCustomStudents() {
-  if (!confirm("क्या आप सभी custom students को delete करना चाहते हैं? यह action reverse नहीं हो सकता।")) return;
+  if (!confirm("Kya aap saara student data campus seed par reset karna chahte hain?")) return;
 
   localStorage.removeItem("studentDatabase");
-  alert("✅ Custom student data cleared!");
+  alert("Student data reset ho gaya!");
   location.reload();
 }
 
-function generateDemoStudents() {
-  const demoStudents = [
-    { id: 101, name: "Demo Student 1", email: "demo1@navgurukul.org", password: "demo@2026", role: "Student", phase: "Foundation", status: "Active", ojtProgress: 50, milestoneCompletion: 60, score: 4.2, htmlHoursSpent: 18, cssHoursSpent: 16, jsHoursSpent: 20, phaseDays: 30, leaveDays: 1 },
-    { id: 102, name: "Demo Student 2", email: "demo2@navgurukul.org", password: "demo@2026", role: "Student", phase: "Intermediate", status: "Active", ojtProgress: 70, milestoneCompletion: 80, score: 4.5, htmlHoursSpent: 26, cssHoursSpent: 24, jsHoursSpent: 31, phaseDays: 44, leaveDays: 2 },
-    { id: 103, name: "Demo Student 3", email: "demo3@navgurukul.org", password: "demo@2026", role: "Student", phase: "Advanced", status: "Placed", ojtProgress: 100, milestoneCompletion: 100, score: 4.9, htmlHoursSpent: 34, cssHoursSpent: 30, jsHoursSpent: 40, phaseDays: 60, leaveDays: 0 }
-  ];
-
-  let allStudents = getStudentsFromStorage();
-  allStudents.push(...demoStudents);
-  localStorage.setItem("studentDatabase", JSON.stringify(allStudents));
-
-  alert("✅ Demo students added!");
-  location.reload();
-}
-
-// Initialize on load
 document.addEventListener("DOMContentLoaded", initAdminPortal);

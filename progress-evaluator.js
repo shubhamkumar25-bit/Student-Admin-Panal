@@ -400,5 +400,5 @@ document.addEventListener("DOMContentLoaded", function () {
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", function () {
   localStorage.removeItem("userEmail");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });
