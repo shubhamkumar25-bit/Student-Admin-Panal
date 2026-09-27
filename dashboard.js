@@ -1,15 +1,3 @@
-// Mock student data
-const mockStudents = [
-  { id: 1, name: "Faiyaz Ahmed", email: "faiyaz25@navgurukul.org", phase: "Foundation", status: "Active", ojtProgress: 45, milestoneCompletion: 60, score: 4.8, htmlHoursSpent: 18, cssHoursSpent: 14, jsHoursSpent: 22, phaseDays: 28, leaveDays: 1 },
-  { id: 2, name: "Priya Sharma", email: "priya@navgurukul.org", phase: "Intermediate", status: "Active", ojtProgress: 75, milestoneCompletion: 85, score: 4.6, htmlHoursSpent: 26, cssHoursSpent: 20, jsHoursSpent: 30, phaseDays: 41, leaveDays: 2 },
-  { id: 3, name: "Rahul Verma", email: "rahul@navgurukul.org", phase: "Advanced", status: "Active", ojtProgress: 90, milestoneCompletion: 95, score: 4.9, htmlHoursSpent: 34, cssHoursSpent: 30, jsHoursSpent: 38, phaseDays: 55, leaveDays: 0 },
-  { id: 4, name: "Aisha Khan", email: "aisha@navgurukul.org", phase: "Foundation", status: "Pending", ojtProgress: 20, milestoneCompletion: 30, score: 3.2, htmlHoursSpent: 10, cssHoursSpent: 9, jsHoursSpent: 12, phaseDays: 18, leaveDays: 4 },
-  { id: 5, name: "Amit Singh", email: "amit@navgurukul.org", phase: "Intermediate", status: "Active", ojtProgress: 60, milestoneCompletion: 70, score: 4.3, htmlHoursSpent: 23, cssHoursSpent: 21, jsHoursSpent: 28, phaseDays: 36, leaveDays: 2 },
-  { id: 6, name: "Neha Gupta", email: "neha@navgurukul.org", phase: "Advanced", status: "Placed", ojtProgress: 100, milestoneCompletion: 100, score: 4.9, htmlHoursSpent: 36, cssHoursSpent: 32, jsHoursSpent: 40, phaseDays: 62, leaveDays: 0 },
-  { id: 7, name: "Vikram Patel", email: "vikram@navgurukul.org", phase: "Foundation", status: "At Risk", ojtProgress: 15, milestoneCompletion: 25, score: 2.8, htmlHoursSpent: 8, cssHoursSpent: 7, jsHoursSpent: 9, phaseDays: 15, leaveDays: 5 },
-  { id: 8, name: "Divya Singh", email: "divya@navgurukul.org", phase: "Intermediate", status: "Active", ojtProgress: 65, milestoneCompletion: 72, score: 4.4, htmlHoursSpent: 24, cssHoursSpent: 22, jsHoursSpent: 27, phaseDays: 39, leaveDays: 1 },
-];
-
 function normalizeStudent(student) {
   const htmlDays = Number(student.htmlDaysSpent ?? student.htmlHoursSpent) || 0;
   const cssDays = Number(student.cssDaysSpent ?? student.cssHoursSpent) || 0;
@@ -36,17 +24,7 @@ function normalizeStudent(student) {
 }
 
 function getStudentsFromStorage() {
-  const stored = localStorage.getItem("studentDatabase");
-  if (stored) {
-    try {
-      const students = JSON.parse(stored);
-      const normalized = Array.isArray(students) ? students.map(normalizeStudent) : [];
-      return mockStudents.concat(normalized.filter(s => s.id > 8));
-    } catch {
-      return mockStudents;
-    }
-  }
-  return mockStudents;
+  return getStudentRecords().map(normalizeStudent);
 }
 
 const statusColors = {
@@ -731,7 +709,7 @@ function renderAdminView() {
 
 // Stats Cards (Admin view)
 function renderStats(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
   const statsContainer = document.getElementById("statsContainer");
   const stats = [
     { label: "Active Students", value: students.filter(s => s.status === "Active").length, class: "orange" },
@@ -750,7 +728,7 @@ function renderStats(allStudents = null) {
 
 // Status Pie Chart
 function renderStatusChart(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
   const statusChart = document.getElementById("statusChart");
   const statusCounts = {};
 
@@ -771,7 +749,7 @@ function renderStatusChart(allStudents = null) {
 
 // Phase Bar Chart
 function renderPhaseChart(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
   const phaseChart = document.getElementById("phaseChart");
   const phaseCounts = {};
 
@@ -792,7 +770,7 @@ function renderPhaseChart(allStudents = null) {
 
 // Progress Charts (OJT & Milestone)
 function renderProgressCharts(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
 
   const phaseLabels = [
     "Phase 1 - HTML",
@@ -842,7 +820,7 @@ function renderProgressChart(elementId, title, items) {
 
 // Top Students
 function renderTopStudents(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
   const topStudentsContainer = document.getElementById("topStudents");
   const sorted = [...students].sort((a, b) => b.score - a.score).slice(0, 5);
 
@@ -864,7 +842,7 @@ function renderTopStudents(allStudents = null) {
 
 // Needs Attention
 function renderNeedsAttention(allStudents = null) {
-  const students = allStudents || mockStudents;
+  const students = allStudents || getStudentsFromStorage();
   const needsContainer = document.getElementById("needsAttention");
   const atRisk = students.filter(s => s.status === "At Risk" || s.status === "Pending");
 

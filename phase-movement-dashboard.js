@@ -1,14 +1,3 @@
-const phaseMockStudents = [
-  { id: 1, name: "Faiyaz Ahmed", email: "faiyaz25@navgurukul.org", phase: "Foundation", phaseDays: 28, milestoneCompletion: 60 },
-  { id: 2, name: "Priya Sharma", email: "priya@navgurukul.org", phase: "Intermediate", phaseDays: 41, milestoneCompletion: 85 },
-  { id: 3, name: "Rahul Verma", email: "rahul@navgurukul.org", phase: "Advanced", phaseDays: 55, milestoneCompletion: 95 },
-  { id: 4, name: "Aisha Khan", email: "aisha@navgurukul.org", phase: "Foundation", phaseDays: 18, milestoneCompletion: 30 },
-  { id: 5, name: "Amit Singh", email: "amit@navgurukul.org", phase: "Intermediate", phaseDays: 36, milestoneCompletion: 70 },
-  { id: 6, name: "Neha Gupta", email: "neha@navgurukul.org", phase: "Advanced", phaseDays: 62, milestoneCompletion: 100 },
-  { id: 7, name: "Vikram Patel", email: "vikram@navgurukul.org", phase: "Foundation", phaseDays: 15, milestoneCompletion: 25 },
-  { id: 8, name: "Divya Singh", email: "divya@navgurukul.org", phase: "Intermediate", phaseDays: 39, milestoneCompletion: 72 }
-];
-
 const learningPhases = [
   { index: 1, title: "HTML" },
   { index: 2, title: "CSS" },
@@ -71,16 +60,7 @@ function normalizePhaseStudent(student) {
 }
 
 function getPhaseStudents() {
-  const stored = localStorage.getItem("studentDatabase");
-  if (!stored) return phaseMockStudents.map(normalizePhaseStudent);
-
-  try {
-    const parsed = JSON.parse(stored);
-    const normalized = Array.isArray(parsed) ? parsed.map(normalizePhaseStudent) : [];
-    return phaseMockStudents.map(normalizePhaseStudent).concat(normalized.filter(student => student.id > 8));
-  } catch {
-    return phaseMockStudents.map(normalizePhaseStudent);
-  }
+  return getStudentRecords().map(normalizePhaseStudent);
 }
 
 function getMovementStatus(student) {

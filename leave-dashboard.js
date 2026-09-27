@@ -1,14 +1,3 @@
-const leaveMockStudents = [
-  { id: 1, name: "Faiyaz Ahmed", email: "faiyaz25@navgurukul.org", phase: "Foundation", phaseDays: 28, leaveDays: 1 },
-  { id: 2, name: "Priya Sharma", email: "priya@navgurukul.org", phase: "Intermediate", phaseDays: 41, leaveDays: 2 },
-  { id: 3, name: "Rahul Verma", email: "rahul@navgurukul.org", phase: "Advanced", phaseDays: 55, leaveDays: 0 },
-  { id: 4, name: "Aisha Khan", email: "aisha@navgurukul.org", phase: "Foundation", phaseDays: 18, leaveDays: 4 },
-  { id: 5, name: "Amit Singh", email: "amit@navgurukul.org", phase: "Intermediate", phaseDays: 36, leaveDays: 2 },
-  { id: 6, name: "Neha Gupta", email: "neha@navgurukul.org", phase: "Advanced", phaseDays: 62, leaveDays: 0 },
-  { id: 7, name: "Vikram Patel", email: "vikram@navgurukul.org", phase: "Foundation", phaseDays: 15, leaveDays: 5 },
-  { id: 8, name: "Divya Singh", email: "divya@navgurukul.org", phase: "Intermediate", phaseDays: 39, leaveDays: 1 }
-];
-
 let currentLeaveRows = [];
 let currentLeaveRange = { from: "", to: "" };
 
@@ -62,16 +51,7 @@ function normalizeLeaveStudent(student) {
 }
 
 function getLeaveStudents() {
-  const stored = localStorage.getItem("studentDatabase");
-  if (!stored) return leaveMockStudents.map(normalizeLeaveStudent);
-
-  try {
-    const parsed = JSON.parse(stored);
-    const normalized = Array.isArray(parsed) ? parsed.map(normalizeLeaveStudent) : [];
-    return leaveMockStudents.map(normalizeLeaveStudent).concat(normalized.filter(student => student.id > 8));
-  } catch {
-    return leaveMockStudents.map(normalizeLeaveStudent);
-  }
+  return getStudentRecords().map(normalizeLeaveStudent);
 }
 
 function getRiskLabel(leaveDays) {
