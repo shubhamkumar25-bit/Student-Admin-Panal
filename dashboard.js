@@ -705,6 +705,39 @@ function renderAdminView() {
   renderProgressCharts(allStudents);
   renderTopStudents(allStudents);
   renderNeedsAttention(allStudents);
+  renderCampusTrackers(allStudents);
+}
+
+function renderCampusTrackers(allStudents) {
+  const phaseTracker = document.getElementById("phaseTracker");
+  const leaveTracker = document.getElementById("leaveTracker");
+  if (!phaseTracker || !leaveTracker || allStudents.length === 0) return;
+
+  const avg = (pick) => Math.round(allStudents.reduce((sum, student) => sum + pick(student), 0) / allStudents.length);
+  const avgPhaseDays = avg(student => student.phaseDays);
+  const avgLeaveDays = avg(student => student.leaveDays);
+  const avgStudyDays = avg(student => student.htmlDaysSpent + student.cssDaysSpent + student.jsDaysSpent);
+
+  const item = (label, value, width, style = "") => `
+    <div class="progress-item">
+      <div class="progress-label">
+        <span>${label}</span>
+        <span>${value}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${Math.min(width, 100)}%; ${style}"></div>
+      </div>
+    </div>
+  `;
+
+  phaseTracker.innerHTML =
+    item("Avg Phase Duration", `${avgPhaseDays} days`, avgPhaseDays * 2)
+    + item("Campus Phase", getCurrentLearningPhaseFromDays(avgPhaseDays), avgPhaseDays * 2, "opacity: 0.55;")
+    + item(getNextLearningPhaseFromDays(avgPhaseDays), "In progress", avgPhaseDays * 2, "opacity: 0.35;");
+
+  leaveTracker.innerHTML =
+    item("Avg Leave Taken", `${avgLeaveDays} days`, avgLeaveDays * 10, "background: linear-gradient(90deg, #ff7744, #ff5a20);")
+    + item("Avg Study Days", `${avgStudyDays} days`, avgStudyDays * 2, "opacity: 0.55;");
 }
 
 // Stats Cards (Admin view)
